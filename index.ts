@@ -13,26 +13,39 @@ const $ = async (cmd: string) => {
 
 const DEFAULT_ROOT_BRANCH = "master";
 
-/**
- * ./cli source-branch-name target-branch-name
- * ./cli issue/123 release/1.0.0
- *
- * Assumes root branch's name is master
- * Otherwise third arg is the root branch name
- */
-const [_bun, _file, source, target, rootOverride] = Bun.argv;
+const [_bun, _file, target, rootOverride] = Bun.argv;
 
-if (!source || !target) {
-    console.log("Missing source or target branch name");
-    process.exit(1);
+if (!target) {
+  console.log("Missing target branch name");
+  process.exit(1);
 }
 
+// Get current branch name as the source
+const source = await $(`git rev-parse --abbrev-ref HEAD`);
+
 const root = rootOverride || DEFAULT_ROOT_BRANCH;
+
+if (target === source || target === root) {
+  console.log("Current branch cannot be the same as target or root branch");
+  process.exit(1);
+}
 
 // Gets commits different between source and root
 const revList = await $(`git rev-list ${source} ^${root} --reverse`);
 const commitsToCherryPick = revList.split("\n").filter(Boolean);
 
-const newBranchName = `${source}-picked`;
+// Create new branch based on target named after source
+const branchName = `${source}-picked`;
+console.log(`Creating new branch ${branchName} based on ${target}`);
+await $(`git checkout ${target}`);
+await $(`git checkout -b ${branchName}`);
 
-console.log(commitsToCherryPick);
+// Cherry pick commits
+await Promise.all(
+  commitsToCherryPick.map(async (commit) => {
+    console.log(`Cherry picking ${commit}`);
+    await $(`git cherry-pick ${commit}`);
+  }),
+);
+
+console.log("Done!");
