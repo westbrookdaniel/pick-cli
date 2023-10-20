@@ -21,7 +21,7 @@ if (!target) {
 }
 
 // Get current branch name as the source
-const source = await $(`git rev-parse --abbrev-ref HEAD`);
+const source = (await $(`git rev-parse --abbrev-ref HEAD`)).trim();
 
 const root = rootOverride || DEFAULT_ROOT_BRANCH;
 
@@ -31,8 +31,14 @@ if (target === source || target === root) {
 }
 
 // Gets commits different between source and root
-const revList = await $(`git rev-list ${source} ^${root} --reverse`);
-const commitsToCherryPick = revList.split("\n").filter(Boolean);
+const revList = await $(`git rev-list ${source} ^${root}`);
+const commitsToCherryPick = revList.split("\n").filter(Boolean).reverse();
+
+const status = await $("git status -s");
+if (status.trim().length > 0) {
+  console.log("Working directory is not clean");
+  process.exit(1);
+}
 
 // Create new branch based on target named after source
 const branchName = `${source}-picked`;
