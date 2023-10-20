@@ -1,0 +1,8 @@
+{
+  "name": "pick-cli",
+  "version": "0.0.1",
+  "main": "index.js",
+  "devDependencies": {
+    "bun-types": "^1.0.6"
+  }
+}
