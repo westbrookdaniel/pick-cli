@@ -44,7 +44,9 @@ if (status.trim().length > 0) {
 const branchName = `${source}-picked`;
 console.log(`Creating new branch ${branchName} based on ${target}`);
 await $(`git checkout ${target}`);
+console.log("[DEV] checkoed target");
 await $(`git checkout -b ${branchName}`);
+console.log("[DEV] checkoed new");
 
 // Cherry pick commits
 await Promise.all(
