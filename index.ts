@@ -73,10 +73,8 @@ if (shouldBeBranchName !== branchName) {
 
 // Cherry pick commits
 console.log(`Cherry picking...\n`);
-await Promise.all(
-  commitsToCherryPick.map(async (commit) => {
-    const committed = await $(`git cherry-pick ${commit}`);
-    console.log(committed);
-  }),
-);
+for (const commit of commitsToCherryPick) {
+  const committed = await $(`git cherry-pick ${commit}`);
+  console.log(committed);
+}
 console.log("Done!");
